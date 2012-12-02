@@ -1,0 +1,32 @@
+The templator plugin allows the creation of multi-file templates. Templates could 
+be written in any code template/skeleton/snippets style. At the time of 
+writing, only tskeleton-style templates (vimscript #1160) are supported though. 
+(See |g:templator#expanders| for how to enable additional template engines.)
+
+The |:Templator| command can be used to create multi-file projects.
+
+Example 1: Create files for the "test" template-set in the current directory: >
+
+    :Templator test
+
+Example 2: Create files for the "test" template-set in some directory (the 
+directory is created if it doesn't already exist): >
+
+    :Templator ~/src/foo/bar/test
+
+Templates are kept in "templator" subdirectories in your 'runtimepath' (e.g. 
+~/.vim/templator). A subdirectory's name consists of 
+"TEMPLATE_NAME.TEMPLATE_TYPE". TEMPLATE_NAME is the name that is used for the 
+|:Templator| command. TEMPLATE_TYPE is the name of the template engine used to 
+expand file templates.
+
+Templates consist of a bunch of files and an optional vim script that is run 
+after creating the files.
+
+
+-----------------------------------------------------------------------
+
+Status:  Experimental
+Install: See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
+See http://github.com/tomtom for related plugins.
+
