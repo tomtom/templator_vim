@@ -3,15 +3,29 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-12-02.
 " @Last Change: 2010-09-26.
-" @Revision:    108
+" @Revision:    119
 
 
 if !exists('g:templator#expanders')
-    " A dictionary of {"TYPE_NAME": "VIM EXPRESSION"} pairs.
-    " The vim expression is |:execute|d in order to expand a file 
-    " templates place holders. The vim expression is run in the 
-    " destination file's buffer that contains template markup.
-    let g:templator#expanders = {'tskel': 'call tskeleton#FillIn("", &filetype)'}   "{{{2
+    " A dictionary of with the following structure:
+    "     {"TYPE_NAME": {
+    "         'check': "EXPRESSION"
+    "         'expander': "COMMAND"
+    "     }}
+    "
+    " EXPRESSION is |eval()|uated in order to check if a template 
+    " expander is available.
+    "
+    " COMMAND is |:execute|d in order to expand a file templates place 
+    " holders. The vim expression is run in the destination file's 
+    " buffer that contains template markup.
+    " :read: let g:templator#expanders = {...}   "{{{2
+    let g:templator#expanders = {
+                \ 'tskel': {
+                \     'check': 'exists(":TSkeletonSetup")',
+                \     'expander': 'call tskeleton#FillIn("", &filetype)'
+                \ }
+                \ }
 endif
 
 
@@ -23,19 +37,24 @@ function! s:GetDriverFiles() "{{{3
             if isdirectory(dirname)
                 let tname = fnamemodify(dirname, ':t:r')
                 let ttype = fnamemodify(dirname, ':e')
-                if has_key(s:templators, tname)
-                    echohl WarningMsg
-                    echom "Templator: duplicate entry:" tname filename
-                    echohl NONE
+                if has_key(g:templator#expanders, ttype)
+                    let checker = get(g:templator#expanders[ttype], 'check', '')
+                    if empty(checker) || eval(checker)
+                        if has_key(s:templators, tname)
+                            echohl WarningMsg
+                            echom "Templator: duplicate entry:" tname filename
+                            echohl NONE
+                        endif
+                        let dirname_len = len(dirname)
+                        let filenames = split(glob(dirname .'/**/*'), '\n')
+                        let filenames = filter(filenames, '!isdirectory(v:val)')
+                        let s:templators[tname] = {
+                                    \ 'type': ttype,
+                                    \ 'dir': dirname,
+                                    \ 'files': filenames
+                                    \ }
+                    endif
                 endif
-                let dirname_len = len(dirname)
-                let filenames = split(glob(dirname .'/**/*'), '\n')
-                let filenames = filter(filenames, '!isdirectory(v:val)')
-                let s:templators[tname] = {
-                            \ 'type': ttype,
-                            \ 'dir': dirname,
-                            \ 'files': filenames
-                            \ }
             endif
         endfor
     endif
@@ -78,7 +97,7 @@ function! templator#Setup(name) "{{{3
     if !has_key(g:templator#expanders, drvtype)
         throw printf("Templator: Unknown template type %s for %s", drvtype, a:name)
     else
-        let expander = g:templator#expanders[drvtype]
+        let expander = g:templator#expanders[drvtype].expander
         " TLogVAR expander
     endif
     let cwd = getcwd()
