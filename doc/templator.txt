@@ -1,0 +1,120 @@
+*templator.txt*     Multi-file project templates using skeleton/snippets engines
+                    Author: Tom Link, micathom at gmail com
+
+The templator plugin allows the creation of multi-file templates. Templates could 
+be written in any code template/skeleton/snippets style. At the time of 
+writing, only tskeleton-style templates (vimscript #1160) are supported though. 
+(See |g:templator#expanders| for how to enable additional template engines.)
+
+The |:Templator| command can be used to create multi-file projects.
+
+Example 1: Create files for the "test" template-set in the current directory: >
+
+    :Templator test
+
+Example 2: Create files for the "test" template-set in some directory (the 
+directory is created if it doesn't already exist): >
+
+    :Templator ~/src/foo/bar/test
+
+Templates are kept in "templator" subdirectories in your 'runtimepath' (e.g. 
+~/.vim/templator). A subdirectory's name consists of 
+"TEMPLATE_NAME.TEMPLATE_TYPE". TEMPLATE_NAME is the name that is used for the 
+|:Templator| command. TEMPLATE_TYPE is the name of the template engine used to 
+expand file templates.
+
+Templates consist of a bunch of files and an optional vim script that is run 
+after creating the files.
+
+
+-----------------------------------------------------------------------
+Tutorial~
+
+Following the second example above, (using tskeleton for file templates) the 
+root directory of the template set would be: >
+    
+    ~/.vim/templator/test.tskel/
+
+The template set could, e.g., consist of the following files: >
+
+    ~/.vim/templator/test.tskel/README.TXT
+    ~/.vim/templator/test.tskel/docs/index.html
+    ~/.vim/templator/test.tskel/src/main.c
+
+and an optional vim script in:
+    
+    ~/.vim/templator/test.vim
+
+This vim script is run with ~/src/foo/bar/ set as current working directory.
+
+The above command call >
+
+    :Templator ~/src/foo/bar/test
+
+would the result in the creation of the following files: >
+
+    ~/src/foo/bar/README.TXT
+    ~/src/foo/bar/docs/index.html
+    ~/src/foo/bar/docs/main.c
+
+
+-----------------------------------------------------------------------
+Install~
+
+In order to install the vba, open the vba file in VIM and type: >
+
+    :so %
+
+See :help vimball for details.
+
+In order to use tskeleton-style template sets, tskeleton (vimscript #1160) must 
+be installed: http://www.vim.org/scripts/script.php?script_id=1160
+
+Also available via git: http://github.com/tomtom/templator_vim/
+
+
+========================================================================
+Contents~
+
+        :Templator ............... |:Templator|
+        g:templator#expanders .... |g:templator#expanders|
+        templator#Complete ....... |templator#Complete()|
+        templator#Setup .......... |templator#Setup()|
+
+
+========================================================================
+plugin/templator.vim~
+
+                                                    *:Templator*
+:Templator [DIRNAME/]NAME
+    NAME is the basename (with the extension removed) of a multi-files 
+    project template.
+
+
+========================================================================
+autoload/templator.vim~
+
+                                                    *g:templator#expanders*
+g:templator#expanders          (default: {...})
+    A dictionary of with the following structure:
+        {"TYPE_NAME": {
+            'check': "EXPRESSION"
+            'expander': "COMMAND"
+        }}
+
+    EXPRESSION is |eval()|uated in order to check if a template 
+    expander is available.
+
+    COMMAND is |:execute|d in order to expand a file templates place 
+    holders. The vim expression is run in the destination file's 
+    buffer that contains template markup.
+
+                                                    *templator#Complete()*
+templator#Complete(ArgLead, CmdLine, CursorPos)
+
+                                                    *templator#Setup()*
+templator#Setup(name)
+
+
+
+vim:tw=78:fo=tcq2:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
