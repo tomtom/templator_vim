@@ -59,6 +59,35 @@ would the result in the creation of the following files: >
 
 
 -----------------------------------------------------------------------
+                                                    *templator-placeholders*
+Placeholders~
+
+The basename of template files may contain place holders. The values for these 
+placeholders can be set when calling the |:Templator| command.
+
+The argument may contain named or numbered arguments. E.g.
+
+    :Templator test foo class=Test bar
+
+Will result in the following argument list:
+
+    0 ....... foo
+    1 ....... bar
+    class ... Test
+
+Placeholders in filenames can be defined as follows:
+
+    %{0} .............. 0 can be any numeric value that references the nth 
+                        (unnamed) value of the argument list
+    %{NAME} ........... Replace with the argument NAME
+    %{NAME:DEFAULT} ... Replace with the argument NAME but use the DEFAULT 
+                        value if it isn't set
+
+Example: With the above argument list the template filename "docs/%{class}.txt" 
+will be expanded to the filename "~/src/foo/bar/docs/Test.txt".
+
+
+-----------------------------------------------------------------------
 Install~
 
 In order to install the vba, open the vba file in VIM and type: >
@@ -86,9 +115,12 @@ Contents~
 plugin/templator.vim~
 
                                                     *:Templator*
-:Templator [DIRNAME/]NAME
+:Templator [DIRNAME/]NAME [ARG1 ARG2 ...]
     NAME is the basename (with the extension removed) of a multi-files 
     project template.
+
+    The list of optional will be passed on to |templator#Setup()| to 
+    expand place holders in filenames (see |templator-placeholders|).
 
 
 ========================================================================
@@ -102,18 +134,18 @@ g:templator#expanders          (default: {...})
             'expander': "COMMAND"
         }}
 
-    EXPRESSION is |eval()|uated in order to check if a template 
-    expander is available.
+    The check EXPRESSION is |eval()|uated in order to check if a 
+    template expander is available.
 
-    COMMAND is |:execute|d in order to expand a file templates place 
-    holders. The vim expression is run in the destination file's 
-    buffer that contains template markup.
+    The expander COMMAND is |:execute|d in order to expand a file 
+    templates place holders. The vim expression is run in the 
+    destination file's buffer that contains template markup.
 
                                                     *templator#Complete()*
 templator#Complete(ArgLead, CmdLine, CursorPos)
 
                                                     *templator#Setup()*
-templator#Setup(name)
+templator#Setup(name, ...)
 
 
 
