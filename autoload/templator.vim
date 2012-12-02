@@ -3,7 +3,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-12-02.
 " @Last Change: 2010-09-26.
-" @Revision:    119
+" @Revision:    140
 
 
 if !exists('g:templator#expanders')
@@ -13,12 +13,12 @@ if !exists('g:templator#expanders')
     "         'expander': "COMMAND"
     "     }}
     "
-    " EXPRESSION is |eval()|uated in order to check if a template 
-    " expander is available.
+    " The check EXPRESSION is |eval()|uated in order to check if a 
+    " template expander is available.
     "
-    " COMMAND is |:execute|d in order to expand a file templates place 
-    " holders. The vim expression is run in the destination file's 
-    " buffer that contains template markup.
+    " The expander COMMAND is |:execute|d in order to expand a file 
+    " templates place holders. The vim expression is run in the 
+    " destination file's buffer that contains template markup.
     " :read: let g:templator#expanders = {...}   "{{{2
     let g:templator#expanders = {
                 \ 'tskel': {
@@ -78,7 +78,8 @@ function! templator#Complete(ArgLead, CmdLine, CursorPos) "{{{3
 endf
 
 
-function! templator#Setup(name) "{{{3
+function! templator#Setup(name, ...) "{{{3
+    let args = s:ParseArgs(a:000)
     let dirname = fnamemodify(a:name, ':h')
     if !isdirectory(dirname)
         call mkdir(dirname, 'p')
@@ -116,7 +117,7 @@ function! templator#Setup(name) "{{{3
             " TLogVAR filename
             let subdir = strpart(fnamemodify(filename, ':h'), templator_dir_len)
             " TLogVAR subdir
-            let subfilename = expand(fnamemodify(filename, ':t'))
+            let subfilename = s:ExpandFilename(fnamemodify(filename, ':t'), args)
             " TLogVAR subfilename
             let outdir = dirname
             if !empty(subdir)
@@ -165,4 +166,38 @@ function! s:SetDir(dirname) "{{{3
         exec 'cd' fnameescape(a:dirname)
     endif
 endf
+
+
+function! s:ExpandFilename(filename, args) "{{{3
+    let filename = substitute(a:filename, '%\(%\|{\(\w\+\)\%(:\(.\{-}\)\)\?}\)', '\=s:PlaceHolder(a:args, submatch(1), submatch(2), submatch(3))', 'g')
+    return filename
+endf
+
+
+function! s:PlaceHolder(args, pct, name, default) "{{{3
+    if a:pct == '%'
+        return '%'
+    else
+        return get(a:args, a:name, a:default)
+    endif
+endf
+
+
+function! s:ParseArgs(arglist) "{{{3
+    let args = {}
+    let idx = 0
+    for arg in a:arglist
+        if arg =~ '^\w\+='
+            let key = matchstr(arg, '^\w\{-}\ze=')
+            let val = matchstr(arg, '^\w\{-}=\zs.*$')
+        else
+            let key = idx
+            let val = arg
+            let idx += 1
+        endif
+        let args[key] = val
+    endfor
+    return args
+endf
+
 
