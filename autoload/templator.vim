@@ -136,11 +136,17 @@ function! templator#Setup(name) "{{{3
                 let outfile = outdir .'/'. subfilename
             endif
             " TLogVAR outfile
-            let lines = readfile(filename)
-            if writefile(lines, outfile) != -1
-                exec 'edit' fnameescape(outfile)
-                exec expander
-                update
+            if filereadable(outfile)
+                echohl WarningMsg
+                echom "Templator: File already exists: Ignore it:" outfile
+                echohl NONE
+            else
+                let lines = readfile(filename)
+                if writefile(lines, outfile) != -1
+                    exec 'edit' fnameescape(outfile)
+                    exec expander
+                    update
+                endif
             endif
         endfor
         if !empty(driver_file)
