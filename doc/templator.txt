@@ -23,8 +23,8 @@ Templates are kept in "templator" subdirectories in your 'runtimepath' (e.g.
 |:Templator| command. TEMPLATE_TYPE is the name of the template engine used to 
 expand file templates.
 
-Templates consist of a bunch of files and an optional vim script that is run 
-after creating the files.
+Templates consist of a bunch of files and an optional vim script (see 
+|templator-scripts|) that is run after creating the files.
 
 
 -----------------------------------------------------------------------
@@ -41,7 +41,7 @@ The template set could, e.g., consist of the following files: >
     ~/.vim/templator/test.tskel/docs/index.html
     ~/.vim/templator/test.tskel/src/main.c
 
-and an optional vim script in:
+and an optional vim script (see |templator-scripts|) in:
     
     ~/.vim/templator/test.vim
 
@@ -59,6 +59,27 @@ would the result in the creation of the following files: >
 
 
 -----------------------------------------------------------------------
+                                                    *templator-scripts*
+Template scripts~
+
+Every template set may be accompanied by a vim script in the parent directory. 
+E.g. the script file for the template set "~/.vim/templator/test.tskel/" is 
+"~/.vim/templator/test.vim".
+
+The template script for template NAME can set the following 
+|dictionary-function|s (self is set to g:templator#drivers[NAME]):
+
+    g:templator#drivers.{NAME}.Before(args) dict
+        Called before processing the template set.
+
+    g:templator#drivers.{NAME}.Buffer(args) dict
+        Called on each newly created file.
+
+    g:templator#drivers.{NAME}.After(args) dict
+        Called after processing the template set.
+
+
+-----------------------------------------------------------------------
                                                     *templator-placeholders*
 Placeholders~
 
@@ -71,19 +92,19 @@ The argument may contain named or numbered arguments. E.g.
 
 Will result in the following argument list:
 
-    0 ....... foo
-    1 ....... bar
+    1 ....... foo
+    2 ....... bar
     class ... Test
 
 Placeholders in filenames can be defined as follows:
 
-    %{0} .............. 0 can be any numeric value that references the nth 
+    ${0} .............. 0 can be any numeric value that references the nth 
                         (unnamed) value of the argument list
-    %{NAME} ........... Replace with the argument NAME
-    %{NAME:DEFAULT} ... Replace with the argument NAME but use the DEFAULT 
+    ${NAME} ........... Replace with the argument NAME
+    ${NAME=DEFAULT} ... Replace with the argument NAME but use the DEFAULT 
                         value if it isn't set
 
-Example: With the above argument list the template filename "docs/%{class}.txt" 
+Example: With the above argument list the template filename "docs/${class}.txt" 
 will be expanded to the filename "~/src/foo/bar/docs/Test.txt".
 
 
@@ -106,8 +127,8 @@ Also available via git: http://github.com/tomtom/templator_vim/
 Contents~
 
         :Templator ............... |:Templator|
-        g:templator#expanders .... |g:templator#expanders|
-        templator#Complete ....... |templator#Complete()|
+        g:templator#edit ......... |g:templator#edit|
+        g:templator#sep .......... |g:templator#sep|
         templator#Setup .......... |templator#Setup()|
 
 
@@ -126,26 +147,34 @@ plugin/templator.vim~
 ========================================================================
 autoload/templator.vim~
 
-                                                    *g:templator#expanders*
-g:templator#expanders          (default: {...})
-    A dictionary of with the following structure:
-        {"TYPE_NAME": {
-            'check': "EXPRESSION"
-            'expander': "COMMAND"
-        }}
+                                                    *g:templator#edit*
+g:templator#edit               (default: 'hide edit')
+    The command used for opening files.
 
-    The check EXPRESSION is |eval()|uated in order to check if a 
-    template expander is available.
-
-    The expander COMMAND is |:execute|d in order to expand a file 
-    templates place holders. The vim expression is run in the 
-    destination file's buffer that contains template markup.
-
-                                                    *templator#Complete()*
-templator#Complete(ArgLead, CmdLine, CursorPos)
+                                                    *g:templator#sep*
+g:templator#sep                (default: exists('&shellslash') && !&shellslash ? '\' : '/')
 
                                                     *templator#Setup()*
 templator#Setup(name, ...)
+    The name argument may contain directory information. E.g. 
+    "foo/bar/test" will create file from the template set "test" in the 
+    directory "foo/bar", which will be created if necessary.
+
+                                                        *b:templator_root_dir*
+    If the name argument is a relative path and if the variable 
+    b:templator_root_dir exists, the directory name is relative to that 
+    root directory. Otherwise it is relative to the current working 
+    directory.
+
+    Additional arguments can be passed as a mix of numbered and named 
+    arguments. E.g. "foo name=bar boo" will be parsed as:
+
+        1    = foo
+        name = bar
+        2    = boo
+
+    Those arguments can be used from placeholders (see 
+    |templator-placeholders|).
 
 
 
