@@ -1,8 +1,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-12-02.
-" @Last Change: 2010-09-26.
-" @Revision:    16
+" @Last Change: 2012-12-03.
+" @Revision:    18
 
 
 
@@ -11,18 +11,18 @@ SpecBegin 'title': 'Place holders'
 
 
 It should parse argument lists.
-Should be equal <SID>ParseArgs(['foo']), {'0': 'foo'}
-Should be equal <SID>ParseArgs(['foo', 'foo=bar', 'bar']), {'0': 'foo', '1': 'bar', 'foo': 'bar'}
+Should be equal <SID>ParseArgs(['foo']), {'1': 'foo'}
+Should be equal <SID>ParseArgs(['foo', 'foo=bar', 'bar']), {'1': 'foo', '2': 'bar', 'foo': 'bar'}
 
 
 It should expand filenames.
 Should be equal <SID>ExpandFilename(
-            \ 'la%%%{foo}la%{0}la%{1}la',
+            \ 'la$$${foo}la${1}la${2}la',
             \ <SID>ParseArgs(['foo', 'foo=bar', 'bar'])),
-            \ 'la%barlafoolabarla'
+            \ 'la$barlafoolabarla'
 Should be equal <SID>ExpandFilename(
-            \ 'la%%%{f:XY}la%{0}la%{1}la',
+            \ 'la$$${f=XY}la${1}la${2}la',
             \ <SID>ParseArgs(['foo', 'foo=bar', 'bar'])),
-            \ 'la%XYlafoolabarla'
+            \ 'la$XYlafoolabarla'
 
 
