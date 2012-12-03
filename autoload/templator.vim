@@ -1,32 +1,109 @@
-" templator.vim
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Created:     2012-12-02.
-" @Last Change: 2010-09-26.
-" @Revision:    140
+" @Last Change: 2012-12-03.
+" @Revision:    241
 
 
-if !exists('g:templator#expanders')
-    " A dictionary of with the following structure:
-    "     {"TYPE_NAME": {
-    "         'check': "EXPRESSION"
-    "         'expander': "COMMAND"
-    "     }}
-    "
-    " The check EXPRESSION is |eval()|uated in order to check if a 
-    " template expander is available.
-    "
-    " The expander COMMAND is |:execute|d in order to expand a file 
-    " templates place holders. The vim expression is run in the 
-    " destination file's buffer that contains template markup.
-    " :read: let g:templator#expanders = {...}   "{{{2
-    let g:templator#expanders = {
-                \ 'tskel': {
-                \     'check': 'exists(":TSkeletonSetup")',
-                \     'expander': 'call tskeleton#FillIn("", &filetype)'
-                \ }
-                \ }
+if !exists('g:templator#drivers')
+    " :nodoc:
+    let g:templator#drivers = {}   "{{{2
 endif
+
+
+if !exists('g:templator#edit')
+    " The command used for opening files.
+    let g:templator#edit = 'hide edit'   "{{{2
+endif
+
+
+if !exists('g:templator#sep')
+    let g:templator#sep = exists('&shellslash') && !&shellslash ? '\' : '/'    "{{{2
+endif
+
+
+let s:expanders_init = {}
+
+
+" :nodoc:
+function! templator#Complete(ArgLead, CmdLine, CursorPos) "{{{3
+    let templators = keys(s:GetDriverFiles())
+    " TLogVAR templators
+    let dir = fnamemodify(a:ArgLead, ':h')
+    let base = fnamemodify(a:ArgLead, ':t')
+    let templators = filter(templators, 'strpart(v:val, 0, len(a:ArgLead)) ==# base')
+    if empty(templators)
+        let completions = split(glob(a:ArgLead .'*'), '\n')
+    else
+        let completions = map(templators, 's:JoinFilename(dir, v:val)')
+    endif
+    " TLogVAR completions
+    return completions
+endf
+
+
+" Create files based on the template set referred to by the basename of 
+" the name argument.
+
+" The name argument may contain directory information. E.g. 
+" "foo/bar/test" will create file from the template set "test" in the 
+" directory "foo/bar", which will be created if necessary.
+"
+"                                                     *b:templator_root_dir*
+" If the name argument is a relative path and if the variable 
+" b:templator_root_dir exists, the directory name is relative to that 
+" root directory. Otherwise it is relative to the current working 
+" directory.
+"
+" Additional arguments can be passed as a mix of numbered and named 
+" arguments. E.g. "foo name=bar boo" will be parsed as:
+"
+"     1    = foo
+"     name = bar
+"     2    = boo
+"
+" Those arguments can be used from placeholders (see 
+" |templator-placeholders|).
+function! templator#Setup(name, ...) "{{{3
+    let args = s:ParseArgs(a:000)
+    let dirname = s:GetDirname(a:name)
+    " TLogVAR dirname
+    let tname = fnamemodify(a:name, ':t')
+    " TLogVAR tname
+    let templator = s:GetTemplator(tname)
+    let ttype = templator.type
+    let cwd = getcwd()
+    " TLogVAR cwd
+    try
+        " TLogVAR templator.dir
+        let templator_dir_len = len(templator.dir) + 1
+        if templator.dir =~ '[\/]$'
+            let templator_dir_len += 1
+        endif
+        call s:Driver(dirname, tname, 'Before', args)
+        for filename in templator.files
+            call s:SetDir(dirname)
+            " TLogVAR filename
+            let outfile = s:GetOutfile(dirname, filename, args, templator_dir_len)
+            if filereadable(outfile)
+                echohl WarningMsg
+                echom "Templator: File already exists: " outfile
+                echohl NONE
+                exec g:templator#edit fnameescape(outfile)
+            else
+                let lines = readfile(filename)
+                if writefile(lines, outfile) != -1
+                    exec g:templator#edit fnameescape(outfile)
+                    call templator#expander#{ttype}#Expand()
+                    call s:Driver(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
+                    update
+                endif
+            endif
+        endfor
+        call s:Driver(dirname, tname, 'After', args)
+    finally
+        exec 'cd' fnameescape(cwd)
+    endtry
+endf
 
 
 function! s:GetDriverFiles() "{{{3
@@ -37,14 +114,21 @@ function! s:GetDriverFiles() "{{{3
             if isdirectory(dirname)
                 let tname = fnamemodify(dirname, ':t:r')
                 let ttype = fnamemodify(dirname, ':e')
-                if has_key(g:templator#expanders, ttype)
-                    let checker = get(g:templator#expanders[ttype], 'check', '')
-                    if empty(checker) || eval(checker)
-                        if has_key(s:templators, tname)
-                            echohl WarningMsg
-                            echom "Templator: duplicate entry:" tname filename
-                            echohl NONE
-                        endif
+                " TLogVAR ttype, tname
+                if !has_key(s:expanders_init, ttype)
+                    try
+                        let s:expanders_init[ttype] = templator#expander#{ttype}#Init()
+                    catch /^Vim\%((\a\+)\)\=:E117/
+                        let s:expanders_init[ttype] = 0
+                    endtry
+                endif
+                " echom "DBG get(s:expanders_init, ttype, 0)" get(s:expanders_init, ttype, 0)
+                if get(s:expanders_init, ttype, 0)
+                    if has_key(s:templators, tname)
+                        echohl WarningMsg
+                        echom "Templator: duplicate entry:" tname filename
+                        echohl NONE
+                    else
                         let dirname_len = len(dirname)
                         let filenames = split(glob(dirname .'/**/*'), '\n')
                         let filenames = filter(filenames, '!isdirectory(v:val)')
@@ -62,121 +146,108 @@ function! s:GetDriverFiles() "{{{3
 endf
 
 
-function! templator#Complete(ArgLead, CmdLine, CursorPos) "{{{3
-    let templators = keys(s:GetDriverFiles())
-    " TLogVAR templators
-    let dir = fnamemodify(a:ArgLead, ':h')
-    let base = fnamemodify(a:ArgLead, ':t')
-    let templators = filter(templators, 'strpart(v:val, 0, len(a:ArgLead)) ==# base')
-    if empty(templators)
-        let completions = split(glob(a:ArgLead .'*'), '\n')
-    else
-        let completions = map(templators, 'dir ."/". v:val')
+function! s:GetDirname(filename) "{{{3
+    " TLogVAR a:filename
+    let dirname = fnamemodify(a:filename, ':h')
+    if dirname =~ '^[^:\/]\+[\/]' && exists('b:templator_root_dir')
+        let dirname = s:JoinFilename(b:templator_root_dir, dirname)
     endif
-    " TLogVAR completions
-    return completions
-endf
-
-
-function! templator#Setup(name, ...) "{{{3
-    let args = s:ParseArgs(a:000)
-    let dirname = fnamemodify(a:name, ':h')
+    let dirname = fnamemodify(dirname, ':p')
     if !isdirectory(dirname)
         call mkdir(dirname, 'p')
     endif
-    let fulldirname = fnamemodify(dirname, ':p')
     " TLogVAR dirname
-    let drvname = fnamemodify(a:name, ':t')
-    " TLogVAR drvname
+    return dirname
+endf
+
+
+function! s:GetTemplator(tname) "{{{3
     let templators = s:GetDriverFiles()
-    if !has_key(templators, drvname)
-        throw "Templator: Unknown template name: ". drvname
+    if !has_key(templators, a:tname)
+        throw "Templator: Unknown template name: ". a:tname
     endif
-    let templator = templators[drvname]
-    let drvtype = templator.type
-    " TLogVAR drvtype
-    if !has_key(g:templator#expanders, drvtype)
-        throw printf("Templator: Unknown template type %s for %s", drvtype, a:name)
-    else
-        let expander = g:templator#expanders[drvtype].expander
-        " TLogVAR expander
+    let templator = templators[a:tname]
+    let ttype = templator.type
+    if !get(s:expanders_init, ttype, 0)
+        throw printf("Templator: Unsupported template type %s for %s", ttype, a:name)
     endif
-    let cwd = getcwd()
-    try
-        " TLogVAR templator.dir
-        let driver_file = fnamemodify(templator.dir, ':p:r') .'.vim'
-        if !filereadable(driver_file)
-            let driver_file = ''
-        endif
-        let templator_dir_len = len(templator.dir) + 1
-        if templator.dir =~ '[\/]$'
-            let templator_dir_len += 1
-        endif
-        for filename in templator.files
-            call s:SetDir(fulldirname)
-            " TLogVAR filename
-            let subdir = strpart(fnamemodify(filename, ':h'), templator_dir_len)
-            " TLogVAR subdir
-            let subfilename = s:ExpandFilename(fnamemodify(filename, ':t'), args)
-            " TLogVAR subfilename
-            let outdir = dirname
-            if !empty(subdir)
-                if outdir == '.'
-                    let outdir = subdir
-                else
-                    let outdir .= '/'. subdir
-                endif
-            endif
-            " TLogVAR outdir
-            if outdir == '.'
-                let outfile = subfilename
-            else
-                if !isdirectory(outdir)
-                    call mkdir(outdir, 'p')
-                endif
-                let outfile = outdir .'/'. subfilename
-            endif
-            " TLogVAR outfile
-            if filereadable(outfile)
-                echohl WarningMsg
-                echom "Templator: File already exists: Ignore it:" outfile
-                echohl NONE
-            else
-                let lines = readfile(filename)
-                if writefile(lines, outfile) != -1
-                    exec 'edit' fnameescape(outfile)
-                    exec expander
-                    update
-                endif
-            endif
-        endfor
-        if !empty(driver_file)
-            call s:SetDir(fulldirname)
+    if !has_key(g:templator#drivers, ttype)
+        let g:templator#drivers[a:tname] = {}
+        let driver_file = fnamemodify(templator.dir, ':p:h:r') .'.vim'
+        " TLogVAR driver_file, filereadable(driver_file)
+        if filereadable(driver_file)
             exec 'source' fnameescape(driver_file)
         endif
-    finally
-        exec 'cd' fnameescape(cwd)
-    endtry
+    endif
+    return templator
+endf
+
+
+function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
+    " TLogVAR a:dirname, a:filename, a:args, a:templator_dir_len
+    let subdir = strpart(fnamemodify(a:filename, ':h'), a:templator_dir_len)
+    " TLogVAR subdir
+    let subfilename = s:ExpandFilename(fnamemodify(a:filename, ':t'), a:args)
+    " TLogVAR subfilename
+    let outdir = a:dirname
+    if !empty(subdir)
+        if outdir == '.'
+            let outdir = subdir
+        else
+            let outdir = s:JoinFilename(outdir, subdir)
+        endif
+    endif
+    " TLogVAR outdir
+    if outdir == '.'
+        let outfile = subfilename
+    else
+        if !isdirectory(outdir)
+            call mkdir(outdir, 'p')
+        endif
+        let outfile = s:JoinFilename(outdir, subfilename)
+    endif
+    " TLogVAR outfile
+    return outfile
+endf
+
+
+function! s:Driver(dirname, tname, name, args) "{{{3
+    " TLogVAR a:dirname, a:tname, a:name, a:args
+    let tdef = g:templator#drivers[a:tname]
+    " TLogVAR tdef
+    if has_key(tdef, a:name)
+        let cwd = getcwd()
+        try
+            call s:SetDir(a:dirname)
+            " TLogVAR tdef[a:name]
+            call tdef[a:name](a:args)
+        finally
+            if !empty(a:dirname)
+                exec 'cd' fnameescape(cwd)
+            endif
+        endtry
+    endif
 endf
 
 
 function! s:SetDir(dirname) "{{{3
-    if getcwd() != a:dirname
-        " echom "DBG" 'cd' fnameescape(fulldirname)
-        exec 'cd' fnameescape(a:dirname)
+    let dirname = s:StripSep(a:dirname)
+    " TLogVAR dirname, getcwd()
+    if !empty(dirname) && getcwd() != dirname
+        exec 'cd' fnameescape(dirname)
     endif
 endf
 
 
 function! s:ExpandFilename(filename, args) "{{{3
-    let filename = substitute(a:filename, '%\(%\|{\(\w\+\)\%(:\(.\{-}\)\)\?}\)', '\=s:PlaceHolder(a:args, submatch(1), submatch(2), submatch(3))', 'g')
+    let filename = substitute(a:filename, '\$\(\$\|{\(\w\+\)\%(=\(.\{-}\)\)\?}\)', '\=s:PlaceHolder(a:args, submatch(1), submatch(2), submatch(3))', 'g')
     return filename
 endf
 
 
 function! s:PlaceHolder(args, pct, name, default) "{{{3
-    if a:pct == '%'
-        return '%'
+    if a:pct == '$'
+        return '$'
     else
         return get(a:args, a:name, a:default)
     endif
@@ -185,7 +256,7 @@ endf
 
 function! s:ParseArgs(arglist) "{{{3
     let args = {}
-    let idx = 0
+    let idx = 1
     for arg in a:arglist
         if arg =~ '^\w\+='
             let key = matchstr(arg, '^\w\{-}\ze=')
@@ -200,4 +271,14 @@ function! s:ParseArgs(arglist) "{{{3
     return args
 endf
 
+
+function! s:JoinFilename(...) "{{{3
+    let parts = map(copy(a:000), 's:StripSep(v:val)')
+    return join(parts, g:templator#sep)
+endf
+
+
+function! s:StripSep(filename) "{{{3
+    return substitute(a:filename, '[\/]$', '', 'g')
+endf
 
