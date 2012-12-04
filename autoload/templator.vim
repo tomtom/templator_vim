@@ -149,8 +149,11 @@ endf
 function! s:GetDirname(filename) "{{{3
     " TLogVAR a:filename
     let dirname = fnamemodify(a:filename, ':h')
-    if dirname =~ '^[^:\/]\+[\/]' && exists('b:templator_root_dir')
-        let dirname = s:JoinFilename(b:templator_root_dir, dirname)
+    if dirname =~ '^\.\.\?[\/]'  " explicitely a relative filename
+    elseif dirname !~ '^\([\/]\|[^:\/]:\)'  " not an absolute filename
+        if exists('b:templator_root_dir')
+            let dirname = s:JoinFilename(b:templator_root_dir, dirname)
+        endif
     endif
     let dirname = fnamemodify(dirname, ':p')
     if !isdirectory(dirname)
