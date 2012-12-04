@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-03.
-" @Revision:    241
+" @Last Change: 2012-12-04.
+" @Revision:    251
 
 
 if !exists('g:templator#drivers')
@@ -51,8 +51,10 @@ endf
 "                                                     *b:templator_root_dir*
 " If the name argument is a relative path and if the variable 
 " b:templator_root_dir exists, the directory name is relative to that 
-" root directory. Otherwise it is relative to the current working 
-" directory.
+" root directory. If b:templator_root_dir does not exist, it is relative 
+" to the current working directory. You can circumvent the use of 
+" b:templator_root_dir even when it's set by prepending the path with 
+" "./".
 "
 " Additional arguments can be passed as a mix of numbered and named 
 " arguments. E.g. "foo name=bar boo" will be parsed as:
