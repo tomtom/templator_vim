@@ -96,9 +96,15 @@ function! templator#Setup(name, ...) "{{{3
             else
                 let lines = readfile(filename)
                 if writefile(lines, outfile) != -1
-                    exec g:templator#edit fnameescape(outfile)
+                    let fargs = copy(args)
+                    let fargs.filename = outfile
+                    if !s:Driver('', tname, 'Edit', args)
+                        exec g:templator#edit fnameescape(outfile)
+                    endif
+                    let b:templator_args = args
                     call templator#expander#{ttype}#Expand()
                     call s:Driver(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
+                    unlet! b:templator_args
                     update
                 endif
             endif
@@ -223,22 +229,26 @@ function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
 endf
 
 
-function! s:Driver(dirname, tname, name, args) "{{{3
+function! s:Driver(dirname, tname, name, args, ...) "{{{3
     " TLogVAR a:dirname, a:tname, a:name, a:args
     let tdef = g:templator#drivers[a:tname]
     " TLogVAR tdef
     if has_key(tdef, a:name)
-        let cwd = getcwd()
+        if !empty(a:dirname)
+            let cwd = getcwd()
+        endif
         try
             call s:SetDir(a:dirname)
             " TLogVAR tdef[a:name]
             call tdef[a:name](a:args)
+            return 1
         finally
             if !empty(a:dirname)
                 exec 'cd' fnameescape(cwd)
             endif
         endtry
     endif
+    return 0
 endf
 
 
