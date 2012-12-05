@@ -143,8 +143,10 @@ plugin/templator.vim~
     NAME is the basename (with the extension removed) of a multi-files 
     project template.
 
-    The list of optional will be passed on to |templator#Setup()| to 
-    expand place holders in filenames (see |templator-placeholders|).
+    The list of optional arguments is used to expand place holders in 
+    filenames (see |templator-placeholders|).
+
+    See |templator#Setup()| for details.
 
 
 ========================================================================
@@ -164,12 +166,14 @@ templator#Setup(name, ...)
     directory "foo/bar", which will be created if necessary.
 
                                                         *b:templator_root_dir*
-    If the name argument is a relative path and if the variable 
-    b:templator_root_dir exists, the directory name is relative to that 
-    root directory. If b:templator_root_dir does not exist, it is relative 
-    to the current working directory. You can circumvent the use of 
-    b:templator_root_dir even when it's set by prepending the path with 
-    "./".
+    If the name argument begins with "*", the filename is relative to the 
+    project's root directory. Templator uses the following methods to find 
+    the project's root directory:
+
+      1. If the variable b:templator_root_dir exists, use its value.
+      2. If tlib (vimscript #1863) is available, check if the current 
+         buffer is under the control of a supported VCS and use that 
+         directory.
 
     Additional arguments can be passed as a mix of numbered and named 
     arguments. E.g. "foo name=bar boo" will be parsed as:
