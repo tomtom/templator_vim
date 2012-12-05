@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-04.
-" @Revision:    255
+" @Last Change: 2012-12-05.
+" @Revision:    266
 
 
 if !exists('g:templator#drivers')
@@ -69,10 +69,8 @@ endf
 " |templator-placeholders|).
 function! templator#Setup(name, ...) "{{{3
     let args = s:ParseArgs(a:000)
-    let dirname = s:GetDirname(a:name)
+    let [tname, dirname] = s:GetDirname(a:name)
     " TLogVAR dirname
-    let tname = fnamemodify(a:name, ':t')
-    " TLogVAR tname
     let templator = s:GetTemplator(tname)
     let ttype = templator.type
     let cwd = getcwd()
@@ -156,11 +154,13 @@ function! s:GetDriverFiles() "{{{3
 endf
 
 
-function! s:GetDirname(filename) "{{{3
-    " TLogVAR a:filename
-    let dirname = fnamemodify(a:filename, ':h')
-    if dirname =~ '^\*'
-        let dirname = strpart(dirname, 1)
+function! s:GetDirname(name) "{{{3
+    " TLogVAR a:name
+    let dirname = fnamemodify(a:name, ':p:h')
+    let tname = fnamemodify(a:name, ':t')
+    " TLogVAR tname
+    if tname =~ '^\*'
+        let tname = substitute(tname, '^\*', '', '')
         if exists('b:templator_root_dir')
             let dirname = s:JoinFilename(b:templator_root_dir, dirname)
         elseif exists('g:loaded_tlib') && g:loaded_tlib >= 100
@@ -170,12 +170,11 @@ function! s:GetDirname(filename) "{{{3
             endif
         endif
     endif
-    let dirname = fnamemodify(dirname, ':p')
     if !isdirectory(dirname)
         call mkdir(dirname, 'p')
     endif
-    " TLogVAR dirname
-    return dirname
+    " TLogVAR tname, dirname
+    return [tname, dirname]
 endf
 
 
