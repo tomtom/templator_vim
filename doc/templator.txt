@@ -1,10 +1,16 @@
 *templator.txt*     Multi-file project templates using skeleton/snippets engines
                     Author: Tom Link, micathom at gmail com
 
-The templator plugin allows the creation of multi-file templates. Templates could 
-be written in any code template/skeleton/snippets style. At the time of 
-writing, only tskeleton-style templates (vimscript #1160) are supported though. 
-(See |g:templator#expanders| for how to enable additional template engines.)
+The templator plugin allows the creation of filesets based on multi-file 
+templates. Templates could be written in any code 
+template/skeleton/snippets style. At the time of writing, templates can 
+be written in:
+
+    - template vim (see |templator-tvim|) ("tvim" extension)
+    - tskeleton (vimscript #1160) ("tskel" extension)
+
+It shoudln't be too difficult to add support for additional template 
+engines.
 
 The |:Templator| command can be used to create multi-file projects.
 
@@ -83,7 +89,7 @@ The template script for template NAME can set the following
 
 -----------------------------------------------------------------------
                                                     *templator-placeholders*
-Placeholders~
+Placeholders in filenames~
 
 The basename of template files may contain place holders. The values for these 
 placeholders can be set when calling the |:Templator| command.
@@ -120,10 +126,13 @@ In order to install the vba, open the vba file in VIM and type: >
 
 See :help vimball for details.
 
+Also available via git: http://github.com/tomtom/templator_vim/
+
+
+Optional:
+
 In order to use tskeleton-style template sets, tskeleton (vimscript #1160) must 
 be installed: http://www.vim.org/scripts/script.php?script_id=1160
-
-Also available via git: http://github.com/tomtom/templator_vim/
 
 
 ========================================================================

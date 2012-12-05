@@ -1,8 +1,19 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-05.
-" @Revision:    49
+" @Revision:    50
 
+" :doc:
+"                                                   *templator-tvim*
+" Template vim~
+"
+" tvim is a minimal php-style template engine. The following 
+" place-holders are supported:
+"
+"   <?vim ... ?> ... Replace the placeholder with the output (see 
+"                    |:echo|) of the enclosed vim code.
+"   <?vimcursor?> .. Set the cursor at this position after expanding any 
+"                    placeholder.
 
 " if !exists('g:templator#expander#tvim#use_sandbox')
 "     let g:templator#expander#tvim#use_sandbox = 1   "{{{2
