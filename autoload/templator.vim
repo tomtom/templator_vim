@@ -1,7 +1,14 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-05.
-" @Revision:    266
+" @Revision:    268
+
+
+if !exists('g:templator#verbose')
+    " If true, show some warnings (e.g. when opening an already existing 
+    " file that wasn't created by templator).
+    let g:templator#verbose = 1   "{{{2
+endif
 
 
 if !exists('g:templator#drivers')
@@ -87,9 +94,11 @@ function! templator#Setup(name, ...) "{{{3
             " TLogVAR filename
             let outfile = s:GetOutfile(dirname, filename, args, templator_dir_len)
             if filereadable(outfile)
-                echohl WarningMsg
-                echom "Templator: File already exists: " outfile
-                echohl NONE
+                if g:templator#verbose
+                    echohl WarningMsg
+                    echom "Templator: File already exists: " outfile
+                    echohl NONE
+                endif
                 exec g:templator#edit fnameescape(outfile)
             else
                 let lines = readfile(filename)
@@ -133,9 +142,11 @@ function! s:GetDriverFiles() "{{{3
                 " echom "DBG get(s:expanders_init, ttype, 0)" get(s:expanders_init, ttype, 0)
                 if get(s:expanders_init, ttype, 0)
                     if has_key(s:templators, tname)
-                        echohl WarningMsg
-                        echom "Templator: duplicate entry:" tname filename
-                        echohl NONE
+                        if g:templator#verbose
+                            echohl WarningMsg
+                            echom "Templator: duplicate entry:" tname filename
+                            echohl NONE
+                        endif
                     else
                         let dirname_len = len(dirname)
                         let filenames = split(glob(dirname .'/**/*'), '\n')
