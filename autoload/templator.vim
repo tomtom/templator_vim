@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-04.
-" @Revision:    251
+" @Revision:    255
 
 
 if !exists('g:templator#drivers')
@@ -49,12 +49,14 @@ endf
 " directory "foo/bar", which will be created if necessary.
 "
 "                                                     *b:templator_root_dir*
-" If the name argument is a relative path and if the variable 
-" b:templator_root_dir exists, the directory name is relative to that 
-" root directory. If b:templator_root_dir does not exist, it is relative 
-" to the current working directory. You can circumvent the use of 
-" b:templator_root_dir even when it's set by prepending the path with 
-" "./".
+" If the name argument begins with "*", the filename is relative to the 
+" project's root directory. Templator uses the following methods to find 
+" the project's root directory:
+"
+"   1. If the variable b:templator_root_dir exists, use its value.
+"   2. If tlib (vimscript #1863) is available, check if the current 
+"      buffer is under the control of a supported VCS and use that 
+"      directory.
 "
 " Additional arguments can be passed as a mix of numbered and named 
 " arguments. E.g. "foo name=bar boo" will be parsed as:
@@ -151,10 +153,15 @@ endf
 function! s:GetDirname(filename) "{{{3
     " TLogVAR a:filename
     let dirname = fnamemodify(a:filename, ':h')
-    if dirname =~ '^\.\.\?[\/]'  " explicitely a relative filename
-    elseif dirname !~ '^\([\/]\|[^:\/]:\)'  " not an absolute filename
+    if dirname =~ '^\*'
+        let dirname = strpart(dirname, 1)
         if exists('b:templator_root_dir')
             let dirname = s:JoinFilename(b:templator_root_dir, dirname)
+        elseif exists('g:loaded_tlib') && g:loaded_tlib >= 100
+            let [vcs_type, vcs_dir] = tlib#vcs#FindVCS(expand('%'))
+            if !empty(vcs_dir)
+                let dirname = fnamemodify(vcs_dir, ':p:h:h')
+            endif
         endif
     endif
     let dirname = fnamemodify(dirname, ':p')
