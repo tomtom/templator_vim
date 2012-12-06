@@ -195,6 +195,11 @@ templator#Setup(name, ...)
          buffer is under the control of a supported VCS and use that 
          directory.
 
+    Example:
+    If b:templator_root_dir is /home/foo/bar and the current buffer is 
+    /home/foo/bar/src/lib/test.c, then *boo/far will create files from the 
+    "far" template set in /home/foo/bar/boo.
+
     Additional arguments can be passed as a mix of numbered and named 
     arguments. E.g. "foo name=bar boo" will be parsed as:
 
