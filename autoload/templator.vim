@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-05.
-" @Revision:    270
+" @Revision:    285
 
 
 if !exists('g:templator#verbose')
@@ -33,7 +33,7 @@ let s:expanders_init = {}
 
 " :nodoc:
 function! templator#Complete(ArgLead, CmdLine, CursorPos) "{{{3
-    let templators = keys(s:GetDriverFiles())
+    let templators = keys(s:GetAllTemplators())
     " TLogVAR templators
     let dir = fnamemodify(a:ArgLead, ':h')
     let base = fnamemodify(a:ArgLead, ':t')
@@ -65,6 +65,11 @@ endf
 "      buffer is under the control of a supported VCS and use that 
 "      directory.
 "
+" Example:
+" If b:templator_root_dir is /home/foo/bar and the current buffer is 
+" /home/foo/bar/src/lib/test.c, then *boo/far will create files from the 
+" "far" template set in /home/foo/bar/boo.
+"
 " Additional arguments can be passed as a mix of numbered and named 
 " arguments. E.g. "foo name=bar boo" will be parsed as:
 "
@@ -88,7 +93,7 @@ function! templator#Setup(name, ...) "{{{3
         if templator.dir =~ '[\/]$'
             let templator_dir_len += 1
         endif
-        call s:Driver(dirname, tname, 'Before', args)
+        call s:RunHook(dirname, tname, 'Before', args)
         for filename in templator.files
             call s:SetDir(dirname)
             " TLogVAR filename
@@ -105,25 +110,25 @@ function! templator#Setup(name, ...) "{{{3
                 if writefile(lines, outfile) != -1
                     let fargs = copy(args)
                     let fargs.filename = outfile
-                    if !s:Driver('', tname, 'Edit', args)
+                    if !s:RunHook('', tname, 'Edit', args)
                         exec g:templator#edit fnameescape(outfile)
                     endif
                     let b:templator_args = args
                     call templator#expander#{ttype}#Expand()
-                    call s:Driver(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
+                    call s:RunHook(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
                     unlet! b:templator_args
                     update
                 endif
             endif
         endfor
-        call s:Driver(dirname, tname, 'After', args)
+        call s:RunHook(dirname, tname, 'After', args)
     finally
         exec 'cd' fnameescape(cwd)
     endtry
 endf
 
 
-function! s:GetDriverFiles() "{{{3
+function! s:GetAllTemplators() "{{{3
     if !exists('s:templators')
         let files = globpath(&rtp, 'templator/*.*')
         let s:templators = {}
@@ -167,20 +172,33 @@ endf
 
 function! s:GetDirname(name) "{{{3
     " TLogVAR a:name
-    let dirname = fnamemodify(a:name, ':p:h')
-    let tname = fnamemodify(a:name, ':t')
-    " TLogVAR tname
-    if tname =~ '^\*'
-        let tname = substitute(tname, '^\*', '', '')
+    if a:name =~ '^\*'
+        let use_root = 1
+        let name = strpart(a:name, 1)
+    else
+        let use_root = 0
+        let name = a:name
+    endif
+    let dirname = fnamemodify(name, ':h')
+    let tname = fnamemodify(name, ':t')
+    " TLogVAR use_root, name, dirname, tname
+    if use_root
         if exists('b:templator_root_dir')
             let dirname = s:JoinFilename(b:templator_root_dir, dirname)
         elseif exists('g:loaded_tlib') && g:loaded_tlib >= 100
             let [vcs_type, vcs_dir] = tlib#vcs#FindVCS(expand('%'))
+            " TLogVAR vcs_type, vcs_dir
             if !empty(vcs_dir)
-                let dirname = fnamemodify(vcs_dir, ':p:h:h')
+                let dirname = s:JoinFilename(fnamemodify(vcs_dir, ':p:h:h'), dirname)
             endif
+        else
+            echohl WarningMsg
+            echom "Templator: No method left to find the project's root directory:" a:name
+            echohl NONE
         endif
     endif
+    " TLogVAR dirname
+    let dirname = fnamemodify(dirname, ':p')
     if !isdirectory(dirname)
         call mkdir(dirname, 'p')
     endif
@@ -190,7 +208,7 @@ endf
 
 
 function! s:GetTemplator(tname) "{{{3
-    let templators = s:GetDriverFiles()
+    let templators = s:GetAllTemplators()
     if !has_key(templators, a:tname)
         throw "Templator: Unknown template name: ". a:tname
     endif
@@ -239,7 +257,7 @@ function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
 endf
 
 
-function! s:Driver(dirname, tname, name, args, ...) "{{{3
+function! s:RunHook(dirname, tname, name, args, ...) "{{{3
     " TLogVAR a:dirname, a:tname, a:name, a:args
     let tdef = g:templator#drivers[a:tname]
     " TLogVAR tdef
