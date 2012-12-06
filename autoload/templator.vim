@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-05.
-" @Revision:    269
+" @Revision:    270
 
 
 if !exists('g:templator#verbose')
@@ -24,8 +24,7 @@ endif
 
 
 if !exists('g:templator#sep')
-    let g:templator#sep = '/'    "{{{2
-    " let g:templator#sep = exists('&shellslash') && !&shellslash ? '\' : '/'    "{{{2
+    let g:templator#sep = exists('+shellslash') && !&shellslash ? '\' : '/'    "{{{2
 endif
 
 
