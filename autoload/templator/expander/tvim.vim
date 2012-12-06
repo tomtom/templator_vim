@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-05.
-" @Revision:    50
+" @Last Change: 2012-12-06.
+" @Revision:    54
 
 " :doc:
 "                                                   *templator-tvim*
@@ -15,13 +15,18 @@
 "   <?vimcursor?> .. Set the cursor at this position after expanding any 
 "                    placeholder.
 
-" if !exists('g:templator#expander#tvim#use_sandbox')
-"     let g:templator#expander#tvim#use_sandbox = 1   "{{{2
-" endif
+
+if !exists('g:templator#expander#tvim#enable')
+    " It true, enable templates in template-vim.
+    "
+    " Code embedded in templates is executed via |:@|. It is not run in 
+    " the sandbox.
+    let g:templator#expander#tvim#enable = 1   "{{{2
+endif
 
 
 function! templator#expander#tvim#Init() "{{{3
-    return 1
+    return g:templator#expander#tvim#enable
 endf
 
 
@@ -49,13 +54,7 @@ function! s:Replace(code) "{{{3
         let @t  = join(lines, "\n") ."\n"
         " TLogVAR @t
         redir => output
-        " if g:templator#expander#tvim#use_sandbox && (
-        "             \ !exists('b:templator_args') ||
-        "             \ get(b:templator_args, 'use_sandbox', g:templator#expander#tvim#use_sandbox))
-        "     silent sandbox @t
-        " else
-            silent @t
-        " endif
+        silent @t
         redir END
     finally
         let @t = t
