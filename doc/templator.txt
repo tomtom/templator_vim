@@ -138,11 +138,16 @@ be installed: http://www.vim.org/scripts/script.php?script_id=1160
 ========================================================================
 Contents~
 
-        :Templator ............... |:Templator|
-        g:templator#verbose ...... |g:templator#verbose|
-        g:templator#edit ......... |g:templator#edit|
-        g:templator#sep .......... |g:templator#sep|
-        templator#Setup .......... |templator#Setup()|
+        :Templator .............................. |:Templator|
+        g:templator#verbose ..................... |g:templator#verbose|
+        g:templator#edit ........................ |g:templator#edit|
+        g:templator#sep ......................... |g:templator#sep|
+        templator#Setup ......................... |templator#Setup()|
+        g:templator#expander#tvim#enable ........ |g:templator#expander#tvim#enable|
+        templator#expander#tvim#Init ............ |templator#expander#tvim#Init()|
+        templator#expander#tvim#Expand .......... |templator#expander#tvim#Expand()|
+        templator#expander#tskel#Init ........... |templator#expander#tskel#Init()|
+        templator#expander#tskel#Expand ......... |templator#expander#tskel#Expand()|
 
 
 ========================================================================
@@ -172,7 +177,7 @@ g:templator#edit               (default: 'hide edit')
     The command used for opening files.
 
                                                     *g:templator#sep*
-g:templator#sep                (default: exists('&shellslash') && !&shellslash ? '\' : '/')
+g:templator#sep                (default: exists('+shellslash') && !&shellslash ? '\' : '/')
 
                                                     *templator#Setup()*
 templator#Setup(name, ...)
@@ -199,6 +204,45 @@ templator#Setup(name, ...)
 
     Those arguments can be used from placeholders (see 
     |templator-placeholders|).
+
+
+========================================================================
+autoload/templator/expander/tvim.vim~
+
+
+                                                  *templator-tvim*
+Template vim~
+
+tvim is a minimal php-style template engine. The following 
+place-holders are supported:
+
+  <?vim ... ?> ... Replace the placeholder with the output (see 
+                   |:echo|) of the enclosed vim code.
+  <?vimcursor?> .. Set the cursor at this position after expanding any 
+                   placeholder.
+
+                                                    *g:templator#expander#tvim#enable*
+g:templator#expander#tvim#enable (default: 1)
+    It true, enable templates in template-vim.
+
+    Code embedded in templates is executed via |:@|. It is not run in 
+    the sandbox.
+
+                                                    *templator#expander#tvim#Init()*
+templator#expander#tvim#Init()
+
+                                                    *templator#expander#tvim#Expand()*
+templator#expander#tvim#Expand()
+
+
+========================================================================
+autoload/templator/expander/tskel.vim~
+
+                                                    *templator#expander#tskel#Init()*
+templator#expander#tskel#Init()
+
+                                                    *templator#expander#tskel#Expand()*
+templator#expander#tskel#Expand()
 
 
 
