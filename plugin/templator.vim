@@ -3,8 +3,8 @@
 " @GIT:         http://github.com/tomtom/
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2010-09-26.
-" @Revision:    17
-" GetLatestVimScripts: 0 0 :AutoInstall: templator.vim
+" @Revision:    18
+" GetLatestVimScripts: 4345 0 :AutoInstall: templator.vim
 " Project templates using skeleton/snippets engines
 
 if &cp || exists("loaded_templator")
