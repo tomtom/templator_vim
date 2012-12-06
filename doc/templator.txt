@@ -1,6 +1,13 @@
 *templator.txt*     Multi-file project templates using skeleton/snippets engines
                     Author: Tom Link, micathom at gmail com
 
+In many programming languges/environments, you usually work with a set of files 
+that belong together. E.g. if you create a c file, you usually also want to 
+create a h header file. If you create a viewer file, you usually also want to 
+create corresponding model and controller files. If you want to create a 
+library file, you usually also want to create some test file etc. This is were 
+templator comes in.
+
 The templator plugin allows the creation of filesets based on multi-file 
 templates. Templates could be written in any code 
 template/skeleton/snippets style. At the time of writing, templates can 
