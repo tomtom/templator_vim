@@ -1,7 +1,7 @@
 *templator.txt*     Multi-file project templates using skeleton/snippets engines
                     Author: Tom Link, micathom at gmail com
 
-In many programming languges/environments, you usually work with a set of files 
+In many programming languages/environments, you usually work with a set of files 
 that belong together. E.g. if you create a c file, you usually also want to 
 create a h header file. If you create a viewer file, you usually also want to 
 create corresponding model and controller files. If you want to create a 
@@ -16,7 +16,7 @@ be written in:
     - template vim (see |templator-tvim|) ("tvim" extension)
     - tskeleton (vimscript #1160) ("tskel" extension)
 
-It shoudln't be too difficult to add support for additional template 
+It shouldn't be too difficult to add support for additional template 
 engines.
 
 The |:Templator| command can be used to create multi-file projects.
@@ -136,10 +136,14 @@ See :help vimball for details.
 Also available via git: http://github.com/tomtom/templator_vim/
 
 
-Optional:
+Optional enhancements:
 
 In order to use tskeleton-style template sets, tskeleton (vimscript #1160) must 
 be installed: http://www.vim.org/scripts/script.php?script_id=1160
+
+For projects under VCS control, if you want support for filenames relative to 
+the project's root, tlib (vimscript #1863) must be installed: 
+http://www.vim.org/scripts/script.php?script_id=1863
 
 
 ========================================================================
