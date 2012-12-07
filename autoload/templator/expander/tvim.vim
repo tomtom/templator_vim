@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-06.
-" @Revision:    54
+" @Revision:    59
 
 " :doc:
 "                                                   *templator-tvim*
@@ -32,7 +32,7 @@ endf
 
 function! templator#expander#tvim#Expand() "{{{3
     let text = join(getline(1, '$'), "\n")
-    let text = substitute(text, '<?vim\_s\+\(\_.\{-}\)\_s*?>', '\=s:Replace(submatch(1))', 'g')
+    let text = substitute(text, '<?vim\_s\+\(\(\_[^''"?]\+\|''\_[^'']*''\|"\([^"]*\n\|\_[^"]*"\)\)\{-}\)\_s*?>', '\=s:Replace(submatch(1))', 'g')
     " TLogVAR text
     let lines = split(text, '\|\n')
     1,$delete
