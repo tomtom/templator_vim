@@ -1,4 +1,4 @@
-In many programming languges/environments, you usually work with a set of files 
+In many programming languages/environments, you usually work with a set of files 
 that belong together. E.g. if you create a c file, you usually also want to 
 create a h header file. If you create a viewer file, you usually also want to 
 create corresponding model and controller files. If you want to create a 
@@ -13,7 +13,7 @@ be written in:
     - template vim (see |templator-tvim|) ("tvim" extension)
     - tskeleton (vimscript #1160) ("tskel" extension)
 
-It shoudln't be too difficult to add support for additional template 
+It shouldn't be too difficult to add support for additional template 
 engines.
 
 The |:Templator| command can be used to create multi-file projects.
