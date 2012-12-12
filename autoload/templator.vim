@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-05.
-" @Revision:    285
+" @Revision:    288
 
 
 if !exists('g:templator#verbose')
@@ -17,9 +17,16 @@ if !exists('g:templator#drivers')
 endif
 
 
-if !exists('g:templator#edit')
-    " The command used for opening files.
-    let g:templator#edit = 'hide edit'   "{{{2
+if !exists('g:templator#edit_new')
+    " The command used for editing newly created files.
+    let g:templator#edit_new = 'hide edit'   "{{{2
+endif
+
+
+if !exists('g:templator#edit_again')
+    " The command used for editing files that already existed.
+    " If empty, don't open already existing files.
+    let g:templator#edit_again = g:templator#edit_new   "{{{2
 endif
 
 
@@ -104,14 +111,16 @@ function! templator#Setup(name, ...) "{{{3
                     echom "Templator: File already exists: " outfile
                     echohl NONE
                 endif
-                exec g:templator#edit fnameescape(outfile)
+                if !empty(g:templator#edit_again)
+                    exec g:templator#edit_again fnameescape(outfile)
+                endif
             else
                 let lines = readfile(filename)
                 if writefile(lines, outfile) != -1
                     let fargs = copy(args)
                     let fargs.filename = outfile
                     if !s:RunHook('', tname, 'Edit', args)
-                        exec g:templator#edit fnameescape(outfile)
+                        exec g:templator#edit_new fnameescape(outfile)
                     endif
                     let b:templator_args = args
                     call templator#expander#{ttype}#Expand()
