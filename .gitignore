@@ -6,5 +6,5 @@ TODO_archived.viki
 *.vmb
 *.zip
 .last_*
-test
-test_*
+test/
+test_*/
