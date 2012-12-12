@@ -151,7 +151,8 @@ Contents~
 
         :Templator .............................. |:Templator|
         g:templator#verbose ..................... |g:templator#verbose|
-        g:templator#edit ........................ |g:templator#edit|
+        g:templator#edit_new .................... |g:templator#edit_new|
+        g:templator#edit_again .................. |g:templator#edit_again|
         g:templator#sep ......................... |g:templator#sep|
         templator#Setup ......................... |templator#Setup()|
         g:templator#expander#tvim#enable ........ |g:templator#expander#tvim#enable|
@@ -183,9 +184,14 @@ g:templator#verbose            (default: 1)
     If true, show some warnings (e.g. when opening an already existing 
     file that wasn't created by templator).
 
-                                                    *g:templator#edit*
-g:templator#edit               (default: 'hide edit')
-    The command used for opening files.
+                                                    *g:templator#edit_new*
+g:templator#edit_new           (default: 'hide edit')
+    The command used for editing newly created files.
+
+                                                    *g:templator#edit_again*
+g:templator#edit_again         (default: g:templator#edit_new)
+    The command used for editing files that already existed.
+    If empty, don't open already existing files.
 
                                                     *g:templator#sep*
 g:templator#sep                (default: exists('+shellslash') && !&shellslash ? '\' : '/')
