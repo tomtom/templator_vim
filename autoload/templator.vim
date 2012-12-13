@@ -101,32 +101,37 @@ function! templator#Setup(name, ...) "{{{3
             let templator_dir_len += 1
         endif
         call s:RunHook(dirname, tname, 'Before', args)
+        let includefilename_args = copy(args)
         for filename in templator.files
-            call s:SetDir(dirname)
-            " TLogVAR filename
             let outfile = s:GetOutfile(dirname, filename, args, templator_dir_len)
-            if filereadable(outfile)
-                if g:templator#verbose
-                    echohl WarningMsg
-                    echom "Templator: File already exists: " outfile
-                    echohl NONE
-                endif
-                if !empty(g:templator#edit_again)
-                    exec g:templator#edit_again fnameescape(outfile)
-                endif
-            else
-                let lines = readfile(filename)
-                if writefile(lines, outfile) != -1
-                    let fargs = copy(args)
-                    let fargs.filename = outfile
-                    if !s:RunHook('', tname, 'Edit', args)
-                        exec g:templator#edit_new fnameescape(outfile)
+            let includefilename_args['__FILE__'] = filename
+            let includefilename_args['__FILENAME__'] = outfile
+            if s:RunHook('', tname, 'IncludeFilename', includefilename_args, 1)
+                call s:SetDir(dirname)
+                " TLogVAR filename
+                if filereadable(outfile)
+                    if g:templator#verbose
+                        echohl WarningMsg
+                        echom "Templator: File already exists: " outfile
+                        echohl NONE
                     endif
-                    let b:templator_args = args
-                    call templator#expander#{ttype}#Expand()
-                    call s:RunHook(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
-                    unlet! b:templator_args
-                    update
+                    if !empty(g:templator#edit_again)
+                        exec g:templator#edit_again fnameescape(outfile)
+                    endif
+                else
+                    let lines = readfile(filename)
+                    if writefile(lines, outfile) != -1
+                        let fargs = copy(args)
+                        let fargs.filename = outfile
+                        if !s:RunHook('', tname, 'Edit', args)
+                            exec g:templator#edit_new fnameescape(outfile)
+                        endif
+                        let b:templator_args = args
+                        call templator#expander#{ttype}#Expand()
+                        call s:RunHook(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
+                        unlet! b:templator_args
+                        update
+                    endif
                 endif
             endif
         endfor
@@ -269,7 +274,12 @@ endf
 
 function! s:RunHook(dirname, tname, name, args, ...) "{{{3
     " TLogVAR a:dirname, a:tname, a:name, a:args
-    let tdef = g:templator#drivers[a:tname]
+    if a:0 >= 1
+        let default_value = a:1
+        let return_success = 0
+    else
+        let return_success = 1
+    endif
     let tdef = g:templator#hooks[a:tname]
     " TLogVAR tdef
     if has_key(tdef, a:name)
@@ -279,15 +289,19 @@ function! s:RunHook(dirname, tname, name, args, ...) "{{{3
         try
             call s:SetDir(a:dirname)
             " TLogVAR tdef[a:name]
-            call tdef[a:name](a:args)
-            return 1
+            let return_value = tdef[a:name](a:args)
+            if return_success
+                return 1
+            else
+                return return_value
+            endif
         finally
             if !empty(a:dirname)
                 exec 'cd' fnameescape(cwd)
             endif
         endtry
     endif
-    return 0
+    return return_success ? 0 : default_value
 endf
 
 
