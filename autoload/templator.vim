@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-13.
-" @Revision:    301
+" @Revision:    302
 
 
 if !exists('g:templator#verbose')
@@ -57,35 +57,6 @@ endf
 
 " Create files based on the template set referred to by the basename of 
 " the name argument.
-
-" The name argument may contain directory information. E.g. 
-" "foo/bar/test" will create file from the template set "test" in the 
-" directory "foo/bar", which will be created if necessary.
-"
-"                                                     *b:templator_root_dir*
-" If the name argument begins with "*", the filename is relative to the 
-" project's root directory. Templator uses the following methods to find 
-" the project's root directory:
-"
-"   1. If the variable b:templator_root_dir exists, use its value.
-"   2. If tlib (vimscript #1863) is available, check if the current 
-"      buffer is under the control of a supported VCS and use that 
-"      directory.
-"
-" Example:
-" If b:templator_root_dir is /home/foo/bar and the current buffer is 
-" /home/foo/bar/src/lib/test.c, then *boo/far will create files from the 
-" "far" template set in /home/foo/bar/boo.
-"
-" Additional arguments can be passed as a mix of numbered and named 
-" arguments. E.g. "foo name=bar boo" will be parsed as:
-"
-"     1    = foo
-"     name = bar
-"     2    = boo
-"
-" Those arguments can be used from placeholders (see 
-" |templator-placeholders|).
 function! templator#Setup(name, ...) "{{{3
     let args = s:ParseArgs(a:000)
     let [tname, dirname] = s:GetDirname(a:name)

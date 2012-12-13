@@ -23,7 +23,7 @@ The |:Templator| command can be used to create multi-file projects.
 
 Example 1: Create files for the "test" template-set in the current root 
 directory, which usually is the current working directory unless 
-|b:templator_root_dir| is set: >
+|b:templator_root_dir| is set (see |templator-arguments| for details): >
 
     :Templator test
 
@@ -82,16 +82,68 @@ E.g. the script file for the template set "~/.vim/templator/test.tskel/" is
 "~/.vim/templator/test.vim".
 
 The template script for template NAME can set the following 
-|dictionary-function|s (self is set to g:templator#drivers[NAME]):
+|dictionary-function|s (self is set to g:templator#hooks[NAME]):
 
-    g:templator#drivers.{NAME}.Before(args) dict
+    g:templator#hooks.{NAME}.Before(args) dict
         Called before processing the template set.
 
-    g:templator#drivers.{NAME}.Buffer(args) dict
+    g:templator#hooks.{NAME}.IncludeFilename(args) dict => boolean
+        Return false if the current file should not be created. Return true 
+        otherwise. If the hook isn't defined, the value defaults to true.
+        args['__FILE__'] contains the name of the template file.
+        args['__FILENAME__'] contains the name of the filename that would be 
+        created on disk.
+
+    g:templator#hooks.{NAME}.Buffer(args) dict
         Called on each newly created file.
 
-    g:templator#drivers.{NAME}.After(args) dict
+    g:templator#hooks.{NAME}.After(args) dict
         Called after processing the template set.
+
+
+-----------------------------------------------------------------------
+                                                    *templator-arguments*
+Arguments for the |:Templator| command~
+
+The first "name" argument to the |:Templator| command defines:
+
+    1. where to put newly created files
+    2. based on which template set.
+
+The "name" argument consists of one to three parts: [*][DIR]NAME
+
+    * ...... Optional: Create the files relative to a project root directory 
+             (see |b:templator_root_dir|). Templator uses the following methods 
+             to find the project's root directory:
+                                                    *b:templator_root_dir*
+                  1. If the variable b:templator_root_dir exists, use its 
+                     value.
+                  2. If tlib (vimscript #1863) is available, check if the 
+                     current buffer is under the control of a supported VCS and 
+                     use that directory.
+
+    DIR .... Optional: A relative or absolute directory name. The directory 
+             will be created if it doesn't exist. E.g. "foo/bar/test" will 
+             create file from the template set "test" in the directory 
+             "foo/bar", which will be created if necessary.
+
+    NAME ... The name of the template set to be used. The NAME of the template 
+             set "foo.tskel" is "foo".
+
+Example:
+If b:templator_root_dir is /home/foo/bar and the current buffer is 
+/home/foo/bar/src/lib/test.c, then *boo/far will create files from the 
+"far" template set in /home/foo/bar/boo.
+
+Additional arguments can be passed as a mix of numbered and named 
+arguments. E.g. "foo name=bar boo" will be parsed as:
+
+    1    = foo
+    name = bar
+    2    = boo
+
+Those arguments can be used from placeholders (see 
+|templator-placeholders|).
 
 
 -----------------------------------------------------------------------
@@ -168,7 +220,7 @@ plugin/templator.vim~
                                                     *:Templator*
 :Templator [DIRNAME/]NAME [ARG1 ARG2 ...]
     NAME is the basename (with the extension removed) of a multi-files 
-    project template.
+    project template. See |templator-arguments| for details.
 
     The list of optional arguments is used to expand place holders in 
     filenames (see |templator-placeholders|).
@@ -198,34 +250,8 @@ g:templator#sep                (default: exists('+shellslash') && !&shellslash ?
 
                                                     *templator#Setup()*
 templator#Setup(name, ...)
-    The name argument may contain directory information. E.g. 
-    "foo/bar/test" will create file from the template set "test" in the 
-    directory "foo/bar", which will be created if necessary.
-
-                                                        *b:templator_root_dir*
-    If the name argument begins with "*", the filename is relative to the 
-    project's root directory. Templator uses the following methods to find 
-    the project's root directory:
-
-      1. If the variable b:templator_root_dir exists, use its value.
-      2. If tlib (vimscript #1863) is available, check if the current 
-         buffer is under the control of a supported VCS and use that 
-         directory.
-
-    Example:
-    If b:templator_root_dir is /home/foo/bar and the current buffer is 
-    /home/foo/bar/src/lib/test.c, then *boo/far will create files from the 
-    "far" template set in /home/foo/bar/boo.
-
-    Additional arguments can be passed as a mix of numbered and named 
-    arguments. E.g. "foo name=bar boo" will be parsed as:
-
-        1    = foo
-        name = bar
-        2    = boo
-
-    Those arguments can be used from placeholders (see 
-    |templator-placeholders|).
+    Create files based on the template set referred to by the basename of 
+    the name argument.
 
 
 ========================================================================
