@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-05.
-" @Revision:    288
+" @Last Change: 2012-12-13.
+" @Revision:    301
 
 
 if !exists('g:templator#verbose')
@@ -11,9 +11,9 @@ if !exists('g:templator#verbose')
 endif
 
 
-if !exists('g:templator#drivers')
+if !exists('g:templator#hooks')
     " :nodoc:
-    let g:templator#drivers = {}   "{{{2
+    let g:templator#hooks = {}   "{{{2
 endif
 
 
@@ -226,12 +226,12 @@ function! s:GetTemplator(tname) "{{{3
     if !get(s:expanders_init, ttype, 0)
         throw printf("Templator: Unsupported template type %s for %s", ttype, a:name)
     endif
-    if !has_key(g:templator#drivers, ttype)
-        let g:templator#drivers[a:tname] = {}
-        let driver_file = fnamemodify(templator.dir, ':p:h:r') .'.vim'
-        " TLogVAR driver_file, filereadable(driver_file)
-        if filereadable(driver_file)
-            exec 'source' fnameescape(driver_file)
+    if !has_key(g:templator#hooks, ttype)
+        let g:templator#hooks[a:tname] = {}
+        let hooks_file = fnamemodify(templator.dir, ':p:h:r') .'.vim'
+        " TLogVAR hooks_file, filereadable(hooks_file)
+        if filereadable(hooks_file)
+            exec 'source' fnameescape(hooks_file)
         endif
     endif
     return templator
@@ -269,6 +269,7 @@ endf
 function! s:RunHook(dirname, tname, name, args, ...) "{{{3
     " TLogVAR a:dirname, a:tname, a:name, a:args
     let tdef = g:templator#drivers[a:tname]
+    let tdef = g:templator#hooks[a:tname]
     " TLogVAR tdef
     if has_key(tdef, a:name)
         if !empty(a:dirname)
