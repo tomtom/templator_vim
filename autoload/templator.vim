@@ -246,6 +246,7 @@ function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
     " TLogVAR subfilename
     let outdir = a:dirname
     if !empty(subdir)
+        let subdir = s:ExpandFilename(subdir, a:args)
         if outdir == '.'
             let outdir = subdir
         else
