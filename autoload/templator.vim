@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-13.
-" @Revision:    302
+" @Revision:    308
 
 
 if !exists('g:templator#verbose')
@@ -61,6 +61,9 @@ function! templator#Setup(name, ...) "{{{3
     let args = s:ParseArgs(a:000)
     let [tname, dirname] = s:GetDirname(a:name)
     " TLogVAR dirname
+    if !s:RunHook('', tname, 'CheckArgs', args, 1)
+        throw 'templator#Setup: Invalid arguments for template set '. string(tname) .': '. string(a:000)
+    endif
     let templator = s:GetTemplator(tname)
     let ttype = templator.type
     let cwd = getcwd()

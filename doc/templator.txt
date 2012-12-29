@@ -84,6 +84,14 @@ E.g. the script file for the template set "~/.vim/templator/test.tskel/" is
 The template script for template NAME can set the following 
 |dictionary-function|s (self is set to g:templator#hooks[NAME]):
 
+    g:templator#hooks.{NAME}.CheckArgs(args) dict
+        Check whether the provided command-line arguments are complete 
+        and fit the requirements of the template set. Return true (i.e. 
+        non-zero) if the arguments are valid; otherwise return false 
+        (i.e. 0). If the function returns false, an exception is 
+        |:throw|n. Since "args" is a mutable dictionary, the function 
+        can modify the args argument.
+
     g:templator#hooks.{NAME}.Before(args) dict
         Called before processing the template set.
 
