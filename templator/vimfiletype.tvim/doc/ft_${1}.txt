@@ -1,0 +1,29 @@
+*ft_<?vimeval b:templator_args["1"]?>.txt*     <?vimcursor?>
+                    Author:  <?vimeval b:templator_args["user"]?>
+                    Website: <?vimeval b:templator_args["homepage"]?>
+                    License: <?vimeval b:templator_args["license"]?>
+
+The <?vimeval b:templator_args["1"]?> filetype is ...
+
+
+==============================================================================
+                                                    *<?vimeval b:templator_args["1"]?>-contents*
+1. Contents~
+
+	1. Contents........................................: |<?vimeval b:templator_args["1"]?>-contents|
+	2. Getting Started ................................: |<?vimeval b:templator_args["1"]?>-start|
+	3. Usage ..........................................: |<?vimeval b:templator_args["1"]?>-usage|
+
+
+==============================================================================
+                                                    *<?vimeval b:templator_args["1"]?>-start*
+2. <?vimeval b:templator_args["1"]?> -- Getting Started~
+
+
+==============================================================================
+                                                    *<?vimeval b:templator_args["1"]?>-usage*
+3. <?vimeval b:templator_args["1"]?> Usage~
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:fdm=marker
