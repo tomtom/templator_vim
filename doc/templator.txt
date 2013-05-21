@@ -274,6 +274,8 @@ place-holders are supported:
 
   <?vim ... ?> ... Replace the placeholder with the output (see 
                    |:echo|) of the enclosed vim code.
+  <?vimeval ... ?> ... Replace the placeholder with the value (see 
+                   |eval()|) of the enclosed vim code.
   <?vimcursor?> .. Set the cursor at this position after expanding any 
                    placeholder.
 
