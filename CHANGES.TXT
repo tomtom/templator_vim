@@ -1,0 +1,19 @@
+  - tvim: Support end marker in strings
+  - Update r.tskel example template set
+  - Updated r.tskel
+  - g:templator#edit_again: The command used for editing files that already existed.
+  - r.tskel: tests/test_*.R: set  test_that context()
+  - Renamed g:templator#drivers to g:templator#hooks
+  - Enable place holders in directory names
+  - New hook: IncludeFilename: Check whether file should be created
+  - CheckArgs hook
+  - addon-info
+  - Moved r template set to rcom_vim
+  - Minor improvements
+  - tvim: Enable vimeval placeholders
+  - New vimplugin template set
+  - New vimfiletype template set
+  - vimfiletype, vimplugin: doc templates
+  MD5 checksum: fdf1ba7985f38db2a1c1d42f9a1f5459
+version: "0.02"
+
