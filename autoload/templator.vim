@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-13.
-" @Revision:    308
+" @Revision:    314
 
 
 if !exists('g:templator#verbose')
@@ -61,10 +61,10 @@ function! templator#Setup(name, ...) "{{{3
     let args = s:ParseArgs(a:000)
     let [tname, dirname] = s:GetDirname(a:name)
     " TLogVAR dirname
+    let templator = s:GetTemplator(tname)
     if !s:RunHook('', tname, 'CheckArgs', args, 1)
         throw 'templator#Setup: Invalid arguments for template set '. string(tname) .': '. string(a:000)
     endif
-    let templator = s:GetTemplator(tname)
     let ttype = templator.type
     let cwd = getcwd()
     " TLogVAR cwd
@@ -91,6 +91,7 @@ function! templator#Setup(name, ...) "{{{3
                     endif
                     if !empty(g:templator#edit_again)
                         exec g:templator#edit_again fnameescape(outfile)
+                        let b:noquickfixsigns = 1
                     endif
                 else
                     let lines = readfile(filename)
@@ -100,6 +101,7 @@ function! templator#Setup(name, ...) "{{{3
                         if !s:RunHook('', tname, 'Edit', args)
                             exec g:templator#edit_new fnameescape(outfile)
                         endif
+                        let b:noquickfixsigns = 1
                         let b:templator_args = args
                         call templator#expander#{ttype}#Expand()
                         call s:RunHook(&acd ? '' : expand('%:p:h'), tname, 'Buffer', args)
@@ -108,6 +110,7 @@ function! templator#Setup(name, ...) "{{{3
                     endif
                 endif
             endif
+            unlet! b:noquickfixsigns
         endfor
         call s:RunHook(dirname, tname, 'After', args)
     finally
@@ -253,6 +256,9 @@ function! s:RunHook(dirname, tname, name, args, ...) "{{{3
         let return_success = 0
     else
         let return_success = 1
+    endif
+    if !has_key(g:templator#hooks, a:tname)
+        throw 'No hooks defined for template '. a:tname .' ('. join(keys(g:templator#hooks)) .')'
     endif
     let tdef = g:templator#hooks[a:tname]
     " TLogVAR tdef
