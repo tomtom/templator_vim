@@ -3,14 +3,14 @@
 " @GIT:         http://github.com/tomtom/
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2010-09-26.
-" @Revision:    19
+" @Revision:    20
 " GetLatestVimScripts: 4345 0 :AutoInstall: templator.vim
 " Project templates using skeleton/snippets engines
 
 if &cp || exists("loaded_templator")
     finish
 endif
-let loaded_templator = 1
+let loaded_templator = 2
 
 let s:save_cpo = &cpo
 set cpo&vim
