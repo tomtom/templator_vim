@@ -1,9 +1,10 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-13.
-" @Revision:   30
+" @Revision:   33
 
 " :doc:
+"                                                     *templator-vimfiletype*
 " VIM FTPlugin Template Set~
 " 
 " This template set serves as an example for how to use templator.

@@ -1,9 +1,10 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2012-12-13.
-" @Revision:   24
+" @Revision:   29
 
 " :doc:
+"                                                     *templator-vimplugin*
 " VIM Plugin Template Set~
 " 
 " This template set serves as an example for how to use templator.
@@ -36,7 +37,7 @@ if !exists('g:templator_vimplugin_license')
 endif
 
 
-function! g:templator#hooks.vimplugin.CheckArgs(args) dict "{{{3
+function! g:templator#hooks.vimplugin.CheckArgs(args) dict
     if !has_key(a:args, '1')
         echohl WarningMsg
         echom "VIM Plugin: Require at least one argument: the plugin name"
