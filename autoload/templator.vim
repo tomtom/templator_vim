@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-13.
-" @Revision:    314
+" @Last Change: 2013-07-23.
+" @Revision:    343
 
 
 if !exists('g:templator#verbose')
@@ -76,6 +76,10 @@ function! templator#Setup(name, ...) "{{{3
         endif
         call s:RunHook(dirname, tname, 'Before', args)
         let includefilename_args = copy(args)
+        for subdir in templator.subdirs
+            " TLogVAR subdir
+            call s:EnsureSubDir(dirname, subdir, args, templator_dir_len)
+        endfor
         for filename in templator.files
             let outfile = s:GetOutfile(dirname, filename, args, templator_dir_len)
             let includefilename_args['__FILE__'] = filename
@@ -121,9 +125,9 @@ endf
 
 function! s:GetAllTemplators() "{{{3
     if !exists('s:templators')
-        let files = globpath(&rtp, 'templator/*.*')
+        let files = split(globpath(&rtp, 'templator/*.*'), '\n')
         let s:templators = {}
-        for dirname in split(files, '\n')
+        for dirname in files
             if isdirectory(dirname)
                 let tname = fnamemodify(dirname, ':t:r')
                 let ttype = fnamemodify(dirname, ':e')
@@ -145,11 +149,13 @@ function! s:GetAllTemplators() "{{{3
                         endif
                     else
                         let dirname_len = len(dirname)
-                        let filenames = split(glob(dirname .'/**/*'), '\n')
-                        let filenames = filter(filenames, '!isdirectory(v:val)')
+                        let names = split(glob(dirname .'/**/*'), '\n')
+                        let subdirs = filter(copy(names), 'isdirectory(v:val)')
+                        let filenames = filter(copy(names), '!isdirectory(v:val)')
                         let s:templators[tname] = {
                                     \ 'type': ttype,
                                     \ 'dir': dirname,
+                                    \ 'subdirs': subdirs,
                                     \ 'files': filenames
                                     \ }
                     endif
@@ -220,6 +226,27 @@ function! s:GetTemplator(tname) "{{{3
 endf
 
 
+function! s:EnsureSubDir(dirname, subdir, args, templator_dir_len) "{{{3
+    " TLogVAR a:dirname, a:filename, a:args, a:templator_dir_len
+    let subdir = strpart(fnamemodify(a:subdir, ':h'), a:templator_dir_len)
+    " TLogVAR subdir
+    let subsubdir = s:ExpandFilename(fnamemodify(a:subdir, ':t'), a:args)
+    " TLogVAR subsubdir
+    let outdir = a:dirname
+    if !empty(subdir)
+        let subdir = s:ExpandFilename(subdir, a:args)
+        let outdir = s:JoinFilename(outdir, subdir)
+    endif
+    " TLogVAR outdir
+    let outdir = s:JoinFilename(outdir, subsubdir)
+    " TLogVAR outdir
+    if !isdirectory(outdir)
+        call mkdir(outdir, 'p')
+    endif
+    return outdir
+endf
+
+
 function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
     " TLogVAR a:dirname, a:filename, a:args, a:templator_dir_len
     let subdir = strpart(fnamemodify(a:filename, ':h'), a:templator_dir_len)
@@ -229,21 +256,13 @@ function! s:GetOutfile(dirname, filename, args, templator_dir_len) "{{{3
     let outdir = a:dirname
     if !empty(subdir)
         let subdir = s:ExpandFilename(subdir, a:args)
-        if outdir == '.'
-            let outdir = subdir
-        else
-            let outdir = s:JoinFilename(outdir, subdir)
-        endif
+        let outdir = s:JoinFilename(outdir, subdir)
     endif
     " TLogVAR outdir
-    if outdir == '.'
-        let outfile = subfilename
-    else
-        if !isdirectory(outdir)
-            call mkdir(outdir, 'p')
-        endif
-        let outfile = s:JoinFilename(outdir, subfilename)
+    if !isdirectory(outdir)
+        call mkdir(outdir, 'p')
     endif
+    let outfile = s:JoinFilename(outdir, subfilename)
     " TLogVAR outfile
     return outfile
 endf
@@ -328,7 +347,8 @@ endf
 
 
 function! s:JoinFilename(...) "{{{3
-    let parts = map(copy(a:000), 's:StripSep(v:val)')
+    let parts = filter(copy(a:000), 'v:val != "."')
+    let parts = map(parts, 's:StripSep(v:val)')
     return join(parts, g:templator#sep)
 endf
 
