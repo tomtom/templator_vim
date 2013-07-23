@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2012-12-06.
-" @Revision:    70
+" @Last Change: 2013-07-23.
+" @Revision:    75
 
 " :doc:
 "                                                   *templator-tvim*
@@ -51,7 +51,15 @@ endf
 function! s:Replace(type, code) "{{{3
     " TLogVAR a:type, a:code
     if a:type == 'vimeval'
-        let output = eval(a:code)
+        try
+            let output = eval(a:code)
+        catch
+            echohl ErrorMsg
+            echo "Error when evaluating templator template: ". a:code
+            echo "Please check the arguments in the call to :Templator"
+            echohl NONE
+            echoerr v:exception
+        endtry
     else
         let lines = split(a:code, '\n')
         let lines = map(lines, '":". v:val')
