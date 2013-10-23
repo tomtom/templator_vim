@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2013-07-23.
-" @Revision:    343
+" @Last Change: 2013-10-22.
+" @Revision:    349
 
 
 if !exists('g:templator#verbose')
@@ -124,40 +124,43 @@ endf
 
 
 function! s:GetAllTemplators() "{{{3
-    if !exists('s:templators')
+    if !exists('s:templators') || &rtp != s:templators_rtp
         let files = split(globpath(&rtp, 'templator/*.*'), '\n')
         let s:templators = {}
+        let s:templators_rtp = &rtp
         for dirname in files
             if isdirectory(dirname)
                 let tname = fnamemodify(dirname, ':t:r')
-                let ttype = fnamemodify(dirname, ':e')
-                " TLogVAR ttype, tname
-                if !has_key(s:expanders_init, ttype)
-                    try
-                        let s:expanders_init[ttype] = templator#expander#{ttype}#Init()
-                    catch /^Vim\%((\a\+)\)\=:E117/
-                        let s:expanders_init[ttype] = 0
-                    endtry
-                endif
-                " echom "DBG get(s:expanders_init, ttype, 0)" get(s:expanders_init, ttype, 0)
-                if get(s:expanders_init, ttype, 0)
-                    if has_key(s:templators, tname)
-                        if g:templator#verbose
-                            echohl WarningMsg
-                            echom "Templator: duplicate entry:" tname filename
-                            echohl NONE
+                if !has_key(s:templators, 'tname')
+                    let ttype = fnamemodify(dirname, ':e')
+                    " TLogVAR ttype, tname
+                    if !has_key(s:expanders_init, ttype)
+                        try
+                            let s:expanders_init[ttype] = templator#expander#{ttype}#Init()
+                        catch /^Vim\%((\a\+)\)\=:E117/
+                            let s:expanders_init[ttype] = 0
+                        endtry
+                    endif
+                    " echom "DBG get(s:expanders_init, ttype, 0)" get(s:expanders_init, ttype, 0)
+                    if get(s:expanders_init, ttype, 0)
+                        if has_key(s:templators, tname)
+                            if g:templator#verbose
+                                echohl WarningMsg
+                                echom "Templator: duplicate entry:" tname filename
+                                echohl NONE
+                            endif
+                        else
+                            let dirname_len = len(dirname)
+                            let names = split(glob(dirname .'/**/*'), '\n')
+                            let subdirs = filter(copy(names), 'isdirectory(v:val)')
+                            let filenames = filter(copy(names), '!isdirectory(v:val)')
+                            let s:templators[tname] = {
+                                        \ 'type': ttype,
+                                        \ 'dir': dirname,
+                                        \ 'subdirs': subdirs,
+                                        \ 'files': filenames
+                                        \ }
                         endif
-                    else
-                        let dirname_len = len(dirname)
-                        let names = split(glob(dirname .'/**/*'), '\n')
-                        let subdirs = filter(copy(names), 'isdirectory(v:val)')
-                        let filenames = filter(copy(names), '!isdirectory(v:val)')
-                        let s:templators[tname] = {
-                                    \ 'type': ttype,
-                                    \ 'dir': dirname,
-                                    \ 'subdirs': subdirs,
-                                    \ 'files': filenames
-                                    \ }
                     endif
                 endif
             endif
