@@ -6,9 +6,16 @@ library file, you usually also want to create some test file etc. This is were
 templator comes in.
 
 The templator plugin allows the creation of filesets based on multi-file 
-templates. Templates could be written in any code 
-template/skeleton/snippets style. At the time of writing, templates can 
-be written in:
+templates. Possible use cases:
+
+    - Create multi-file projects
+    - Create multiple-files within a project, e.g.
+        - a source file and the corresponding header file
+        - a source file and the corresponding test file
+        - files for a model, a view, and a controller
+
+Templates can be written in any code template/skeleton/snippets style. At the 
+time of writing, templates can be written in:
 
     - template vim (see |templator-tvim|) ("tvim" extension)
     - tskeleton (vimscript #1160) ("tskel" extension)
@@ -18,16 +25,20 @@ engines.
 
 The |:Templator| command can be used to create multi-file projects.
 
-Example 1: Create files for the "test" template-set in the current root 
+Example 1: Create files for the "vimplugin" template-set in the current root 
 directory, which usually is the current working directory unless 
 |b:templator_root_dir| is set (see |templator-arguments| for details): >
 
-    :Templator test
+    :Templator vimplugin myplugin
 
-Example 2: Create files for the "test" template-set in some directory (the 
+"myplugin" is the plugin's name. The argument is required by the 
+template set used in this example. It is also possible to use named 
+arguments.
+
+Example 2: Create files for the "vimplugin" template-set in some directory (the 
 directory is created if it doesn't already exist): >
 
-    :Templator ~/src/foo/bar/test
+    :Templator ~/src/foo/bar/vimplugin myplugin
 
 Templates are kept in "templator" subdirectories in your 'runtimepath' (e.g. 
 ~/.vim/templator). A subdirectory's name consists of 
