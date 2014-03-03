@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Last Change: 2013-10-22.
-" @Revision:    349
+" @Revision:    350
 
 
 if !exists('g:templator#verbose')
@@ -120,6 +120,11 @@ function! templator#Setup(name, ...) "{{{3
     finally
         exec 'cd' fnameescape(cwd)
     endtry
+endf
+
+
+function! templator#Reset() "{{{3
+    unlet! s:templators
 endf
 
 
