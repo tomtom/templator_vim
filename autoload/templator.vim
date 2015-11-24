@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Last Change: 2013-10-22.
-" @Revision:    350
+" @Last Change: 2015-11-24.
+" @Revision:    351
 
 
 if !exists('g:templator#verbose')
@@ -118,7 +118,7 @@ function! templator#Setup(name, ...) "{{{3
         endfor
         call s:RunHook(dirname, tname, 'After', args)
     finally
-        exec 'cd' fnameescape(cwd)
+        exec 'silent cd' fnameescape(cwd)
     endtry
 endf
 
@@ -304,7 +304,7 @@ function! s:RunHook(dirname, tname, name, args, ...) "{{{3
             endif
         finally
             if !empty(a:dirname)
-                exec 'cd' fnameescape(cwd)
+                exec 'silent cd' fnameescape(cwd)
             endif
         endtry
     endif
@@ -316,7 +316,7 @@ function! s:SetDir(dirname) "{{{3
     let dirname = s:StripSep(a:dirname)
     " TLogVAR dirname, getcwd()
     if !empty(dirname) && getcwd() != dirname
-        exec 'cd' fnameescape(dirname)
+        exec 'silent cd' fnameescape(dirname)
     endif
 endf
 
